@@ -1,110 +1,161 @@
 # Facial Recognition System Using FaceNet
-## 1. Overview
-  Develop a real-time facial recognition system using the FaceNet architecture. The system will detect, align, and identify faces from images or video streams, producing 128-dimensional embeddings for each face and matching them against a database for verification or identification.
 
-## 2. Dataset Information
-* Primary Dataset: VGGFace2 (for training and benchmarking)
+A real-time facial recognition system built with FastAPI, FaceNet, and Redis. This system can detect, align, and identify faces from images, producing 128-dimensional embeddings for each face and matching them against a database for verification or identification.
 
-  * Over 3.3 million images of 9,000+ identities
+## Features
 
-  * High variability in pose, age, illumination, ethnicity, and profession
+- Face detection and alignment using MTCNN
+- Face embedding generation using FaceNet (ResNet50 backbone)
+- FastAPI-based REST API
+- Redis-based embedding storage
+- Docker containerization
+- Support for face registration, verification, and identification
 
-* Benchmark Dataset: Labeled Faces in the Wild (LFW) for evaluation
+## Prerequisites
 
-  * 13,000 images of faces collected from the web
+- Docker and Docker Compose
+- Python 3.9+ (if running locally)
+- Redis (handled by Docker)
 
-  * Used for measuring verification accuracy
+## Quick Start with Docker
 
-* Data Format: RGB images, variable sizes, labeled by identity
+1. Clone the repository:
+```bash
+git clone https://github.com/drop2jyoti/Facial-Recognition.git
+cd Facial-Recognition
+```
 
-## 3. Libraries & Tools
-* Python 3.x
+2. Build and start the containers:
+```bash
+docker-compose up --build
+```
 
-* PyTorch or TensorFlow (deep learning framework)
+The API will be available at `http://localhost:8000`
 
-* OpenCV (image processing and face detection)
+## API Endpoints
 
-* dlib or MTCNN (face alignment)
+### 1. Register a Face
+Register a new face in the system.
 
-* NumPy (data manipulation)
+```bash
+curl -X POST "http://localhost:8000/register?user_id=USER_ID" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/to/face/image.jpg"
+```
 
-* scikit-learn (metrics)
+Replace:
+- `USER_ID`: Unique identifier for the person
+- `/path/to/face/image.jpg`: Path to the face image file
 
-* Flask or FastAPI (API deployment)
+### 2. Verify a Face
+Verify if a face matches a registered user.
 
-* Docker (containerization)
+```bash
+curl -X POST "http://localhost:8000/verify?user_id=USER_ID" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/to/face/image.jpg"
+```
 
-## 4. Functional Requirements
-* Detect and align faces in images or video streams
+### 3. Identify a Face
+Identify a face from all registered users.
 
-* Generate 128-dimensional embeddings for each detected face
+```bash
+curl -X POST "http://localhost:8000/identify" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/to/face/image.jpg"
+```
 
-* Compare embeddings for verification (1:1) and identification (1:N)
+### 4. Debug Endpoints
 
-* Achieve >99% accuracy on LFW benchmark
+List all registered users:
+```bash
+curl http://localhost:8000/debug/registered-users
+```
 
-* Provide a REST API for face registration, verification, and identification
+## Local Development Setup
 
-* Support batch processing and real-time inference
+1. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-* Ensure privacy and security of stored embeddings
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-## 5. Implementation Tasks
-<b>1. Project Setup</b>
+3. Set up environment variables:
+Create a `.env` file with:
+```
+REDIS_HOST=localhost
+REDIS_PORT=6379
+MODEL_PATH=models/facenet_weights.pth
+FACE_DETECTION_CONFIDENCE=0.9
+FACE_MATCHING_THRESHOLD=0.7
+```
 
-* Create GitHub repository and set up environment
+4. Run the application:
+```bash
+python src/app.py
+```
 
-* Install required libraries
+## Project Structure
 
-<b>2. Data Preparation</b>
+```
+Facial-Recognition/
+├── src/
+│   ├── app.py              # FastAPI application
+│   │   └── facenet.py      # FaceNet model implementation
+│   ├── utils/
+│   │   └── face_detection.py  # Face detection and alignment
+│   └── database/
+│       └── embedding_store.py  # Redis-based embedding storage
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
+```
 
-* Download and preprocess VGGFace2 and LFW datasets
+## Configuration
 
-* Implement data loaders and augmentation pipelines
+The system can be configured through environment variables:
 
-<b>3. Model Development</b>
+- `REDIS_HOST`: Redis server host (default: localhost)
+- `REDIS_PORT`: Redis server port (default: 6379)
+- `MODEL_PATH`: Path to FaceNet model weights
+- `FACE_DETECTION_CONFIDENCE`: Minimum confidence for face detection (default: 0.9)
+- `FACE_MATCHING_THRESHOLD`: Similarity threshold for face matching (default: 0.7)
 
-* Implement or import FaceNet architecture
+## Troubleshooting
 
-* Integrate MTCNN/dlib for face detection and alignment
+1. If face detection fails:
+   - Ensure the image contains a clear, front-facing face
+   - Check if the image is properly lit
+   - Try adjusting the `FACE_DETECTION_CONFIDENCE` threshold
 
-* Train model on VGGFace2, validate on LFW
+2. If face matching is too strict/loose:
+   - Adjust the `FACE_MATCHING_THRESHOLD` value
+   - Higher values (closer to 1.0) make matching stricter
+   - Lower values make matching more lenient
 
-* Implement triplet loss for embedding learning
+3. If Redis connection fails:
+   - Check if Redis is running
+   - Verify Redis host and port settings
+   - Check Redis connection logs
 
-<b>4. Embedding Database</b>
+## Contributing
 
-* Design storage for face embeddings (in-memory, Redis, or database)
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-* Implement efficient search and matching algorithms (cosine similarity)
+## License
 
-<b>5. API Development</b>
-
-* Develop REST API for face registration, verification, and identification
-
-* Add endpoints for batch processing and real-time video stream handling
-
-<b>6. Performance Optimization</b>
-
-* Quantize and optimize model for faster inference
-
-* Implement multi-threading or GPU acceleration
-
-<b>7. Security & Privacy</b>
-
-* Encrypt stored embeddings
-
-* Add audit logging for access and verification events
-
-<b>8.Documentation</b>
-
-* Write comprehensive README with setup, API usage, and results
-
-* Document code and provide examples
-
-<b>9. Testing</b>
-
-* Unit and integration tests for all components
-
-* Benchmark accuracy and latency on LFW and custom datasets
+This project is licensed under the MIT License - see the LICENSE file for details.
 
