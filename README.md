@@ -5,7 +5,7 @@ A real-time facial recognition system built with FastAPI, FaceNet, and Redis. Th
 ## Features
 
 - Face detection and alignment using MTCNN
-- Face embedding generation using FaceNet (ResNet50 backbone)
+- Face embedding generation using pre-trained FaceNet (ResNet50 backbone)
 - FastAPI-based REST API
 - Redis-based embedding storage
 - Docker containerization
@@ -109,11 +109,13 @@ python src/app.py
 Facial-Recognition/
 ├── src/
 │   ├── app.py              # FastAPI application
+│   ├── models/
 │   │   └── facenet.py      # FaceNet model implementation
 │   ├── utils/
 │   │   └── face_detection.py  # Face detection and alignment
 │   └── database/
 │       └── embedding_store.py  # Redis-based embedding storage
+├── models/                 # Model weights directory
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt

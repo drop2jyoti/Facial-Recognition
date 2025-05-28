@@ -36,7 +36,10 @@ ENV/
 *.jpeg
 *.jpg
 *.png
-models/
+models/*.pth
+models/*.h5
+models/*.pt
+models/*.ckpt
 .env
 
 # Docker
