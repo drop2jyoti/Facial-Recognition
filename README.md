@@ -1,153 +1,156 @@
-# Facial Recognition System Using FaceNet
+# Facial Recognition System
 
-A real-time facial recognition system built with FastAPI, FaceNet, and Redis. This system can detect, align, and identify faces from images, producing 128-dimensional embeddings for each face and matching them against a database for verification or identification.
+A robust facial recognition system built with FastAPI, PyTorch, and Redis. This system provides face registration, verification, and identification capabilities with a secure API interface.
 
 ## Features
 
-- Face detection and alignment using MTCNN
-- Face embedding generation using pre-trained FaceNet (ResNet50 backbone)
-- FastAPI-based REST API
+- Face registration and verification
+- Face identification against registered faces
+- Secure API with key-based authentication
+- Rate limiting to prevent abuse
 - Redis-based embedding storage
-- Docker containerization
-- Support for face registration, verification, and identification
+- Docker support for easy deployment
+- Pre-trained FaceNet model for accurate face recognition
+- Face detection and preprocessing pipeline
+- Debug endpoints for system monitoring
 
 ## Prerequisites
 
+- Python 3.9+
 - Docker and Docker Compose
-- Python 3.9+ (if running locally)
-- Redis (handled by Docker)
+- Redis (included in Docker setup)
+- API Key (generated using the provided script)
 
 ## Quick Start with Docker
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/drop2jyoti/Facial-Recognition.git
-cd Facial-Recognition
+git clone https://github.com/yourusername/facial-recognition.git
+cd facial-recognition
 ```
 
-2. Build and start the containers:
+2. Generate an API key:
+```bash
+python scripts/generate_api_key.py
+```
+This will create a `.env` file with your API key.
+
+3. Start the services:
 ```bash
 docker-compose up --build
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000`.
 
 ## API Endpoints
 
-### 1. Register a Face
-Register a new face in the system.
+All endpoints require an API key to be passed in the `X-API-Key` header.
 
+### Register a Face
 ```bash
-curl -X POST "http://localhost:8000/register?user_id=USER_ID" \
+curl -X POST "http://localhost:8000/register?user_id=user123" \
   -H "accept: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/face/image.jpg"
+  -F "file=@path/to/face/image.jpg"
 ```
 
-Replace:
-- `USER_ID`: Unique identifier for the person
-- `/path/to/face/image.jpg`: Path to the face image file
-
-### 2. Verify a Face
-Verify if a face matches a registered user.
-
+### Verify a Face
 ```bash
-curl -X POST "http://localhost:8000/verify?user_id=USER_ID" \
+curl -X POST "http://localhost:8000/verify?user_id=user123" \
   -H "accept: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/face/image.jpg"
+  -F "file=@path/to/face/image.jpg"
 ```
 
-### 3. Identify a Face
-Identify a face from all registered users.
-
+### Identify a Face
 ```bash
 curl -X POST "http://localhost:8000/identify" \
   -H "accept: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/face/image.jpg"
+  -F "file=@path/to/face/image.jpg"
 ```
 
-### 4. Debug Endpoints
+### Debug Endpoints
 
-List all registered users:
+#### List Registered Users
 ```bash
-curl http://localhost:8000/debug/registered-users
+curl "http://localhost:8000/debug/registered-users" \
+  -H "X-API-Key: YOUR_API_KEY"
 ```
 
-## Local Development Setup
-
-1. Create a virtual environment:
+#### Health Check
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+curl "http://localhost:8000/health"
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Rate Limiting
 
-3. Set up environment variables:
-Create a `.env` file with:
+The API implements rate limiting to prevent abuse:
+- Register endpoint: 5 requests per minute
+- Verify endpoint: 10 requests per minute
+- Identify endpoint: 10 requests per minute
+- Debug endpoints: 30 requests per minute
+
+## Environment Variables
+
+Create a `.env` file in the project root with the following variables:
 ```
-REDIS_HOST=localhost
+API_KEY=your_generated_api_key
+REDIS_HOST=redis
 REDIS_PORT=6379
 MODEL_PATH=models/facenet_weights.pth
 FACE_DETECTION_CONFIDENCE=0.9
 FACE_MATCHING_THRESHOLD=0.7
 ```
 
-4. Run the application:
-```bash
-python src/app.py
-```
-
 ## Project Structure
 
 ```
-Facial-Recognition/
+facial-recognition/
 ├── src/
 │   ├── app.py              # FastAPI application
 │   ├── models/
 │   │   └── facenet.py      # FaceNet model implementation
 │   ├── utils/
-│   │   └── face_detection.py  # Face detection and alignment
+│   │   ├── face_detection.py
+│   │   └── face_preprocessing.py
 │   └── database/
-│       └── embedding_store.py  # Redis-based embedding storage
-├── models/                 # Model weights directory
+│       └── embedding_store.py
+├── scripts/
+│   └── generate_api_key.py
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 ```
 
-## Configuration
+## Security Features
 
-The system can be configured through environment variables:
-
-- `REDIS_HOST`: Redis server host (default: localhost)
-- `REDIS_PORT`: Redis server port (default: 6379)
-- `MODEL_PATH`: Path to FaceNet model weights
-- `FACE_DETECTION_CONFIDENCE`: Minimum confidence for face detection (default: 0.9)
-- `FACE_MATCHING_THRESHOLD`: Similarity threshold for face matching (default: 0.7)
+- API key authentication for all endpoints
+- Rate limiting to prevent abuse
+- Secure Redis connection
+- Input validation and sanitization
+- Error handling and logging
 
 ## Troubleshooting
 
-1. If face detection fails:
+1. **API Key Issues**
+   - Ensure the `.env` file is properly copied into the Docker container
+   - Verify the API key is correctly set in the `.env` file
+   - Check the API key is being passed in the `X-API-Key` header
+
+2. **Face Detection Issues**
    - Ensure the image contains a clear, front-facing face
-   - Check if the image is properly lit
-   - Try adjusting the `FACE_DETECTION_CONFIDENCE` threshold
+   - Check the image format (supported: JPG, PNG)
+   - Verify the image size and quality
 
-2. If face matching is too strict/loose:
-   - Adjust the `FACE_MATCHING_THRESHOLD` value
-   - Higher values (closer to 1.0) make matching stricter
-   - Lower values make matching more lenient
-
-3. If Redis connection fails:
-   - Check if Redis is running
-   - Verify Redis host and port settings
-   - Check Redis connection logs
+3. **Redis Connection Issues**
+   - Check if Redis container is running: `docker-compose ps`
+   - Verify Redis connection settings in `.env`
+   - Check Redis logs: `docker-compose logs redis`
 
 ## Contributing
 
