@@ -1,0 +1,45 @@
+Plan for "Manage Registered Users" Enhancement:
+
+This enhancement aims to add UI elements to the web page for managing registered users, including viewing details and unregistering users directly from the list.
+
+Phase 1: Backend API Modifications
+
+1.  Add endpoint to get a single user's details:
+    *   Modify `src/app.py`.
+    *   Add a new `GET` endpoint, e.g., `/users/{user_id}`.
+    *   This endpoint will take `user_id` as a path parameter.
+    *   It should call the `embedding_store.get_embedding(user_id)`.
+    *   If an embedding is found, return a simple success response (e.g., `{"user_id": user_id, "status": "registered"}`). Avoid returning the raw embedding for security.
+    *   If no embedding is found, raise an `HTTPException` with status code 404 and detail "User not found".
+    *   This endpoint must be protected by the API key dependency (`Depends(verify_api_key)`).
+2.  Ensure `/unregister/{user_id}` endpoint is ready:
+    *   Verify that the existing `DELETE /unregister/{user_id}` endpoint in `src/app.py` correctly calls `embedding_store.delete_embedding(user_id)`. (Already exists and should be functional).
+
+Phase 2: Frontend Web Interface Modifications
+
+1.  Modify the "List Registered Users" display:
+    *   Modify `src/static/index.html`.
+    *   Change the structure within the `div` with `id="usersList"` to accommodate buttons next to each user ID. Use a layout like a list of divs, each containing the user ID and action buttons. Include `data-user-id="{user_id}"` attributes on buttons for easy retrieval.
+2.  Update JavaScript to render interactive list items:
+    *   Modify `src/static/js/app.js`.
+    *   In the `listUsersBtn` event listener, change the code that populates `usersListDiv.innerHTML` to generate HTML that includes the user ID and "View Details" and "Unregister" buttons/links for each user.
+3.  Implement "View Details" functionality in JavaScript:
+    *   Modify `src/static/js/app.js`.
+    *   Add event listeners (using event delegation on `usersListDiv`) to the "View Details" buttons/links.
+    *   Get the `user_id` from the data attribute.
+    *   Show loading/modal.
+    *   Call the `GET /users/{user_id}` backend endpoint.
+    *   Handle response (display status for user, handle 404, handle other errors via `handleApiError`).
+    *   Close loading/modal.
+4.  Implement "Unregister" functionality in JavaScript:
+    *   Modify `src/static/js/app.js`.
+    *   Add event listeners (using event delegation on `usersListDiv`) to the "Unregister" buttons/links.
+    *   Get the `user_id` from the data attribute.
+    *   Show confirmation prompt.
+    *   If confirmed, show loading.
+    *   Call the `DELETE /unregister/{user_id}` backend endpoint.
+    *   Handle response (success message, handle errors via `handleApiError`).
+    *   Upon successful unregistration, remove the user entry from the displayed list (or refetch the list).
+5.  Add/Update CSS styles:
+    *   Modify `src/static/css/styles.css`.
+    *   Add styles for the new layout of user list items, "View Details" and "Unregister" buttons, and any modals/detail display areas. 
