@@ -82,4 +82,68 @@ input[type="file"]:hover {
     margin-bottom: 0.5rem;
     color: #374151;
     font-size: 1.1rem;
+}
+
+.user-item {
+    /* Styles for the div containing user ID and buttons */
+    border: 1px solid #e5e7eb;
+}
+
+.user-item .user-id {
+    /* Styles for the user ID text */
+    flex-grow: 1; /* Allows user ID to take up available space */
+    margin-right: 1rem; /* Space between ID and buttons */
+    word-break: break-all; /* Prevent long IDs from overflowing */
+}
+
+.user-actions button {
+    /* Basic styling for action buttons */
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem; /* text-sm */
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.view-details-btn {
+    /* Specific styles for View Details button */
+    color: #3b82f6; /* blue-600 */
+    border: 1px solid #3b82f6;
+    background-color: transparent;
+}
+
+.view-details-btn:hover {
+    background-color: #eff6ff; /* blue-50 */
+    text-decoration: none; /* Remove underline on hover, already added by JS */
+}
+
+.unregister-btn {
+    /* Specific styles for Unregister button */
+    color: #ef4444; /* red-600 */
+    border: 1px solid #ef4444;
+    background-color: transparent;
+}
+
+.unregister-btn:hover {
+    background-color: #fef2f2; /* red-50 */
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.user-details {
+    /* Styles for the details div that appears below user item */
+    border-top: 1px dashed #d1d5db; /* gray-300 */
+    margin-top: 0.5rem; /* space-y-2 on parent handles gap, this is for internal spacing */
+    padding-top: 0.5rem; 
+    word-break: break-all; /* Prevent long messages from overflowing */
+}
+
+/* Ensure default button styles don't override */
+#usersList button.btn {
+    all: unset;
+    cursor: pointer;
+}
+
+#usersList button.btn:hover {
+    all: unset;
+    cursor: pointer;
+    text-decoration: underline;
 } 

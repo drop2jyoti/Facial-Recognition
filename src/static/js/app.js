@@ -63,22 +63,109 @@ document.getElementById('listUsersBtn').addEventListener('click', async () => {
         const data = await response.json();
         if (response.ok) {
             if (data.registered_users && data.registered_users.length > 0) {
-                const usersList = data.registered_users.map(user => `<li>${user}</li>`).join('');
+                const userItems = data.registered_users.map(user => `
+                    <div class="user-item bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                        <span class="user-id font-semibold">${user}</span>
+                        <div class="user-actions space-x-2">
+                            <button class="view-details-btn text-blue-600 hover:underline" data-user-id="${user}">View Details</button>
+                            <button class="unregister-btn text-red-600 hover:underline" data-user-id="${user}">Unregister</button>
+                        </div>
+                    </div>
+                    <div id="user-details-${user}" class="user-details mt-1 p-2 text-sm text-gray-700 bg-gray-200 rounded-lg" style="display: none;"></div>
+                `).join('');
+                
                 usersListDiv.innerHTML = `
-                    <h3>Registered Users (${data.total_users})</h3>
-                    <ul class="users-list">
-                        ${usersList}
-                    </ul>
+                    <h3 class="text-lg font-semibold mb-2">Registered Users (${data.total_users})</h3>
+                    ${userItems}
                 `;
+                
             } else {
                 showResult(usersListDiv, 'No users registered in the database', true);
             }
         } else {
             const errorMessage = await handleApiError(data, response);
-            showResult(usersListDiv, `Error: ${errorMessage}`, true);
+            showResult(usersListDiv, errorMessage, true);
         }
     } catch (error) {
-        showResult(usersListDiv, `Error: ${error.message}`, true);
+        showResult(usersListDiv, error.message, true);
+    }
+});
+
+// Event delegation for View Details and Unregister buttons
+document.getElementById('usersList').addEventListener('click', async (event) => {
+    const target = event.target;
+
+    // Handle View Details button click
+    if (target.classList.contains('view-details-btn')) {
+        const userId = target.dataset.userId;
+        const detailsDiv = document.getElementById(`user-details-${userId}`);
+        
+        // Toggle details visibility
+        if (detailsDiv.style.display === 'block') {
+            detailsDiv.style.display = 'none';
+            detailsDiv.innerHTML = ''; // Clear content when hidden
+            return;
+        }
+
+        showLoading(detailsDiv);
+        detailsDiv.style.display = 'block';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(userId)}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+            
+            const data = await response.json();
+
+            if (response.ok) {
+                detailsDiv.innerHTML = `User ID: ${data.user_id}, Status: ${data.status}`;
+            } else {
+                const errorMessage = await handleApiError(data, response);
+                detailsDiv.innerHTML = `Error: ${errorMessage}`;
+            }
+        } catch (error) {
+            detailsDiv.innerHTML = `Error: ${error.message}`;
+        }
+    }
+
+    // Handle Unregister button click
+    else if (target.classList.contains('unregister-btn')) {
+        const userId = target.dataset.userId;
+        const userItemDiv = target.closest('.user-item'); // Find the parent user item div
+        
+        if (confirm(`Are you sure you want to unregister user ${userId}?`)) {
+            // Optional: Show a loading indicator near the buttons or on the user item
+            // userItemDiv.querySelector('.user-actions').innerHTML = showLoading(...); // Example, might need adjustment
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/unregister/${encodeURIComponent(userId)}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Remove the user item and details div from the DOM
+                    userItemDiv.remove();
+                    const detailsDiv = document.getElementById(`user-details-${userId}`);
+                    if (detailsDiv) {
+                        detailsDiv.remove();
+                    }
+                    // Optionally, update the total user count display
+                    alert(`User ${userId} unregistered successfully!`);
+
+                } else {
+                    const errorMessage = await handleApiError(data, response);
+                    alert(`Failed to unregister user ${userId}: ${errorMessage}`);
+                    // Optional: Restore buttons or display error near the item
+                }
+            } catch (error) {
+                 alert(`Error unregistering user ${userId}: ${error.message}`);
+                 // Optional: Restore buttons or display error near the item
+            }
+        }
     }
 });
 

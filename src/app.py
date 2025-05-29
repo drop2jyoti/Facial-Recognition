@@ -355,18 +355,25 @@ async def identify_face(
         )
 
 @app.delete("/unregister/{user_id}")
-async def unregister_face(user_id: str):
+async def unregister_face(
+    user_id: str,
+    api_key: str = Depends(verify_api_key)
+):
     """
     Remove a registered face
     """
     try:
+        logger.info(f"Attempting to unregister user: {user_id}")
         success = embedding_store.delete_embedding(user_id)
         if not success:
+            logger.error(f"Failed to delete embedding for user {user_id}")
             raise HTTPException(status_code=500, detail="Failed to delete embedding")
-        
+
+        logger.info(f"Successfully unregistered user: {user_id}")
         return {"message": "Face unregistered successfully"}
-    
+
     except Exception as e:
+        logger.error(f"Error in unregister_face for user {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Add health check endpoint
@@ -374,6 +381,44 @@ async def unregister_face(user_id: str):
 async def health_check(api_key: str = Depends(verify_api_key)):
     """Health check endpoint"""
     return {"status": "healthy"}
+
+@app.get("/users/{user_id}")
+@limiter.limit("30/minute")
+async def get_user_details(
+    user_id: str,
+    request: Request,
+    api_key: str = Depends(verify_api_key)
+):
+    """
+    Get details for a single registered user (for debugging)
+    """
+    try:
+        logger.info(f"Attempting to retrieve details for user_id: {user_id}")
+        
+        # Check if the user is registered
+        stored_embedding = embedding_store.get_embedding(user_id)
+        
+        if stored_embedding is None:
+            logger.warning(f"User not found: {user_id}")
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        logger.info(f"Successfully retrieved details for user_id: {user_id}")
+        
+        # Return a simple confirmation without the embedding
+        return {
+            "user_id": user_id,
+            "status": "registered"
+        }
+        
+    except HTTPException as e:
+        # Re-raise HTTPExceptions to be handled by FastAPI
+        raise e
+    except Exception as e:
+        logger.error(f"Error in get_user_details for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error retrieving user details: {str(e)}"
+        )
 
 if __name__ == "__main__":
     import uvicorn
