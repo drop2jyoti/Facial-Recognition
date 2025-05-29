@@ -1,7 +1,11 @@
 import cv2
 import numpy as np
+import logging
 from typing import Tuple, List, Optional
 from mtcnn import MTCNN
+from .face_detection import FaceDetector
+
+logger = logging.getLogger(__name__)
 
 class FacePreprocessor:
     def __init__(self, 
@@ -16,9 +20,10 @@ class FacePreprocessor:
             detection_confidence: Minimum confidence for face detection
             target_size: Target size for face images (default: VGGFace2 size)
         """
-        self.detector = MTCNN(min_face_size=min_face_size)
+        self.detector = MTCNN()
         self.detection_confidence = detection_confidence
         self.target_size = target_size
+        self.face_detector = FaceDetector()
         
     def detect_face(self, image: np.ndarray) -> Optional[Tuple[np.ndarray, List[int]]]:
         """
@@ -107,18 +112,34 @@ class FacePreprocessor:
         Returns:
             Preprocessed face image or None if no face detected
         """
-        # Detect and align face
-        result = self.detect_face(image)
-        if result is None:
-            return None
+        try:
+            logger.info("Starting face preprocessing")
             
-        aligned_face, _ = result
-        
-        # Convert to RGB
-        if len(aligned_face.shape) == 2:
-            aligned_face = cv2.cvtColor(aligned_face, cv2.COLOR_GRAY2RGB)
+            # Detect face
+            face = self.face_detector.detect_face(image)
+            if face is None:
+                logger.error("No face detected in image")
+                return None
+                
+            logger.info("Face detected successfully")
             
-        # Normalize pixel values
-        aligned_face = aligned_face.astype(np.float32) / 255.0
-        
-        return aligned_face 
+            # Extract face region
+            x, y, w, h = face
+            face_img = image[y:y+h, x:x+w]
+            
+            # Resize to target size
+            face_img = cv2.resize(face_img, self.target_size)
+            
+            # Convert to RGB (from BGR)
+            face_img = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
+            
+            # Normalize pixel values
+            face_img = face_img.astype('float32')
+            face_img = (face_img - 127.5) / 128.0
+            
+            logger.info("Face preprocessing completed successfully")
+            return face_img
+            
+        except Exception as e:
+            logger.error(f"Error in face preprocessing: {str(e)}")
+            return None 

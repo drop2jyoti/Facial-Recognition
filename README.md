@@ -1,11 +1,10 @@
 # Facial Recognition System
 
-A robust facial recognition system built with FastAPI, PyTorch, and Redis. This system provides face registration, verification, and identification capabilities with a secure API interface.
+A robust facial recognition system built with FastAPI, PyTorch, and Redis. This system provides face registration, verification, and identification capabilities through a secure API and a user-friendly web interface.
 
 ## Features
 
-- Face registration and verification
-- Face identification against registered faces
+- Face registration, verification, and identification via API and Web UI
 - Secure API with key-based authentication
 - Rate limiting to prevent abuse
 - Redis-based embedding storage
@@ -13,6 +12,7 @@ A robust facial recognition system built with FastAPI, PyTorch, and Redis. This 
 - Pre-trained FaceNet model for accurate face recognition
 - Face detection and preprocessing pipeline
 - Debug endpoints for system monitoring
+- User-friendly web interface for easy interaction
 
 ## Prerequisites
 
@@ -39,52 +39,52 @@ This will create a `.env` file with your API key.
 ```bash
 docker-compose up --build
 ```
+This will build the Docker image, start the FastAPI application service and the Redis service.
 
-The API will be available at `http://localhost:8000`.
+4. Access the Web Interface:
+Open your browser and go to `http://localhost:8000`.
+
+You will be prompted to enter the API key. Use the key generated in step 2.
+
+## Using the Web Interface
+
+The web interface at `http://localhost:8000` allows you to:
+
+- **Register Face:** Register a new face with a user ID.
+- **Verify Face:** Verify if a face matches a previously registered user ID.
+- **Identify Face:** Identify a face by comparing it against all registered faces.
+- **List Registered Users:** View a list of all registered user IDs.
 
 ## API Endpoints
 
-All endpoints require an API key to be passed in the `X-API-Key` header.
+All endpoints require an API key to be passed in the `X-API-Key` header. Refer to the web interface's network requests in your browser's developer tools for examples of API calls.
 
 ### Register a Face
-```bash
-curl -X POST "http://localhost:8000/register?user_id=user123" \
-  -H "accept: application/json" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@path/to/face/image.jpg"
-```
+`POST /register?user_id={user_id}` with `multipart/form-data` (file: image)
 
 ### Verify a Face
-```bash
-curl -X POST "http://localhost:8000/verify?user_id=user123" \
-  -H "accept: application/json" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@path/to/face/image.jpg"
-```
+`POST /verify?user_id={user_id}` with `multipart/form-data` (file: image)
 
 ### Identify a Face
-```bash
-curl -X POST "http://localhost:8000/identify" \
-  -H "accept: application/json" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@path/to/face/image.jpg"
-```
+`POST /identify` with `multipart/form-data` (file: image)
 
 ### Debug Endpoints
 
 #### List Registered Users
-```bash
-curl "http://localhost:8000/debug/registered-users" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
+`GET /debug/registered-users`
 
 #### Health Check
+`GET /health`
+
+## Purging Redis Data
+
+To clear all registered face data from the Redis database, you can use the `FLUSHALL` command within the Redis container:
+
 ```bash
-curl "http://localhost:8000/health"
+docker-compose exec redis redis-cli FLUSHALL
 ```
+
+Ensure your Docker services are running (`docker-compose up -d`) before running this command.
 
 ## Rate Limiting
 
@@ -101,9 +101,9 @@ Create a `.env` file in the project root with the following variables:
 API_KEY=your_generated_api_key
 REDIS_HOST=redis
 REDIS_PORT=6379
-MODEL_PATH=models/facenet_weights.pth
-FACE_DETECTION_CONFIDENCE=0.9
-FACE_MATCHING_THRESHOLD=0.7
+MODEL_PATH=/app/models/facenet_keras.h5
+FACE_DETECTION_CONFIDENCE=0.9 # Optional, default 0.9
+FACE_MATCHING_THRESHOLD=0.7   # Optional, default 0.7
 ```
 
 ## Project Structure
@@ -119,38 +119,44 @@ facial-recognition/
 │   │   └── face_preprocessing.py
 │   └── database/
 │       └── embedding_store.py
+│   └── static/
+│       ├── index.html      # Web interface HTML
+│       ├── css/
+│       │   └── styles.css  # Web interface CSS
+│       └── js/
+│           └── app.js      # Web interface JavaScript
 ├── scripts/
-│   └── generate_api_key.py
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+│   └── generate_api_key.py # API key generation script
+├── Dockerfile              # Docker build instructions
+├── docker-compose.yml      # Docker Compose configuration
+├── requirements.txt        # Python dependencies
+└── README.md               # Project README
 ```
 
 ## Security Features
 
 - API key authentication for all endpoints
 - Rate limiting to prevent abuse
-- Secure Redis connection
+- Secure Redis connection (within Docker network)
 - Input validation and sanitization
 - Error handling and logging
 
 ## Troubleshooting
 
 1. **API Key Issues**
-   - Ensure the `.env` file is properly copied into the Docker container
-   - Verify the API key is correctly set in the `.env` file
-   - Check the API key is being passed in the `X-API-Key` header
+   - Ensure the `.env` file is present and correct in the project root.
+   - Verify the API key is correctly set in the `.env` file.
+   - Check the API key is being entered correctly in the web interface or passed in the `X-API-Key` header for API calls.
 
-2. **Face Detection Issues**
-   - Ensure the image contains a clear, front-facing face
-   - Check the image format (supported: JPG, PNG)
-   - Verify the image size and quality
+2. **Face Processing Issues (e.g., "Could not process face...")**
+   - Ensure the uploaded image contains a clear, front-facing face.
+   - Check the image is not too small, blurry, or has poor lighting.
+   - Verify the image format (supported: JPG, PNG).
 
 3. **Redis Connection Issues**
    - Check if Redis container is running: `docker-compose ps`
-   - Verify Redis connection settings in `.env`
-   - Check Redis logs: `docker-compose logs redis`
+   - Verify Redis host and port settings in `.env` match `docker-compose.yml`.
+   - Check Redis container logs: `docker-compose logs redis`
 
 ## Contributing
 

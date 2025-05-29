@@ -1,25 +1,63 @@
 import cv2
 import numpy as np
+import logging
 from mtcnn import MTCNN
 from PIL import Image
 
+logger = logging.getLogger(__name__)
+
 class FaceDetector:
-    def __init__(self):
+    def __init__(self, min_face_size=20, detection_confidence=0.9):
         self.detector = MTCNN()
+        self.min_face_size = min_face_size
+        self.detection_confidence = detection_confidence
     
-    def detect_faces(self, image):
+    def detect_face(self, image):
         """
-        Detect faces in an image using MTCNN
-        Args:
-            image: numpy array or PIL Image
-        Returns:
-            list of face boxes (x, y, width, height)
+        Detect face in image using MTCNN
+        Returns: (x, y, w, h) or None if no face detected
         """
-        if isinstance(image, np.ndarray):
-            image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        
-        faces = self.detector.detect_faces(np.array(image))
-        return faces
+        try:
+            logger.info("Starting face detection")
+            
+            # Convert to RGB for MTCNN
+            if len(image.shape) == 2:
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+            elif image.shape[2] == 3:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            
+            # Detect faces
+            faces = self.detector.detect_faces(image)
+            
+            if not faces:
+                logger.error("No faces detected in image")
+                return None
+                
+            logger.info(f"Found {len(faces)} faces in image")
+            
+            # Get the face with highest confidence
+            best_face = max(faces, key=lambda x: x['confidence'])
+            
+            if best_face['confidence'] < self.detection_confidence:
+                logger.error(f"Face detection confidence too low: {best_face['confidence']}")
+                return None
+                
+            logger.info(f"Selected face with confidence: {best_face['confidence']}")
+            
+            # Extract face coordinates
+            x, y, w, h = best_face['box']
+            
+            # Ensure minimum face size
+            if w < self.min_face_size or h < self.min_face_size:
+                logger.error(f"Face too small: {w}x{h}")
+                return None
+                
+            logger.info(f"Successfully detected face at coordinates: ({x}, {y}, {w}, {h})")
+            return (x, y, w, h)
+            
+        except Exception as e:
+            logger.error(f"Error in face detection: {str(e)}")
+            return None
     
     def align_face(self, image, face_box, desired_size=(160, 160)):
         """
