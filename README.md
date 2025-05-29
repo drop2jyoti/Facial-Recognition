@@ -53,7 +53,7 @@ The web interface at `http://localhost:8000` allows you to:
 - **Register Face:** Register a new face with a user ID.
 - **Verify Face:** Verify if a face matches a previously registered user ID.
 - **Identify Face:** Identify a face by comparing it against all registered faces.
-- **List Registered Users:** View a list of all registered user IDs.
+- **List Registered Users:** View a list of all registered user IDs, with options to view details and unregister users.
 
 ## API Endpoints
 
@@ -180,7 +180,7 @@ Here are some potential areas for future improvement and enhancements to the Fac
     *   Add visual feedback (e.g., bounding boxes) during face detection/preprocessing.
     *   Implement real-time face processing from the camera feed.
     *   Provide more detailed progress indicators for operations.
-    *   Add UI elements for managing registered users (viewing details, unregistering).
+    *   Add UI elements for managing registered users (viewing details, unregistering). (Completed)
     *   Allow users to crop or adjust the detected face region.
 
 *   **Robustness and Error Handling:**
