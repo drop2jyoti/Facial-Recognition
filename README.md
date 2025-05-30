@@ -20,6 +20,8 @@ Here is a high-level diagram illustrating the architecture of the system:
 
 ![System Architecture](system-design.png)
 
+For a more detailed explanation and the Mermaid diagram code, please refer to the [System Design document](system-design.md).
+
 ## Prerequisites
 
 - Python 3.9+
