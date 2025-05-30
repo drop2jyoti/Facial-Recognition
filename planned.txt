@@ -42,4 +42,84 @@ Phase 2: Frontend Web Interface Modifications
     *   Upon successful unregistration, remove the user entry from the displayed list (or refetch the list).
 5.  Add/Update CSS styles:
     *   Modify `src/static/css/styles.css`.
-    *   Add styles for the new layout of user list items, "View Details" and "Unregister" buttons, and any modals/detail display areas. 
+    *   Add styles for the new layout of user list items, "View Details" and "Unregister" buttons, and any modals/detail display areas.
+
+---
+
+Plan for "Explore and Integrate Advanced Face Detection Models" Enhancement:
+
+This enhancement aims to improve face detection accuracy, speed, or robustness by researching and potentially integrating a face detection model that is more modern or specialized than the current MTCNN implementation.
+
+Phase 1: Research and Selection
+
+1.  Identify Candidate Models: Research popular and effective face detection models suitable for integration into a Python/PyTorch/OpenCV pipeline. Consider models like:
+    *   RetinaFace
+    *   YOLO-based face detectors (e.g., YOLO-Face)
+    *   Other state-of-the-art models from recent research or libraries.
+2.  Evaluate Model Characteristics: For each candidate model, gather information on:
+    *   Detection accuracy (especially on various face conditions: scale, pose, lighting, occlusion).
+    *   Inference speed and computational requirements.
+    *   Ease of integration with Python, PyTorch, and OpenCV.
+    *   Availability of pre-trained weights.
+    *   Licensing terms.
+3.  Select a Model: Based on the evaluation criteria and the goals for this enhancement, choose one or two most promising models for potential integration.
+
+Phase 2: Integration
+
+1.  Add Dependencies: Add necessary Python libraries for the chosen model(s) to `requirements.txt`.
+2.  Acquire Model Weights: Download or obtain the pre-trained weights for the selected model(s). Determine the best way to include these in the project (e.g., downloading during Docker build or providing instructions).
+3.  Implement New Detector Class(es):
+    *   Create a new Python file (e.g., `src/utils/advanced_face_detector.py`) or modify the existing `src/utils/face_detection.py`.
+    *   Implement a new class (or modify `FaceDetector`) that uses the chosen model's inference logic to detect faces.
+    *   Ensure the output format is consistent with the expected bounding box format `(x, y, w, h)` used by the rest of the pipeline (FacePreprocessor).
+    *   Handle potential landmark output if the model provides it and if it could be used for improved alignment in FacePreprocessor.
+4.  Update Configuration: Modify environment variables or application configuration (e.g., in a config file or `app.py`) to allow selecting which face detection model to use.
+5.  Modify FacePreprocessor: Update `src/utils/face_preprocessing.py` to use the new face detector class based on the configuration. Adjust any logic dependent on the detector's output (e.g., if landmark format changes).
+6.  Testing:
+    *   Unit Tests: Write or adapt unit tests for the new face detection logic to verify it returns correct bounding boxes for various test images.
+    *   Integration Tests: Run the full application with the new detector and perform registration, verification, and identification tests to ensure the entire pipeline works correctly. Compare results with the old MTCNN detector.
+    *   Performance Testing: Evaluate the speed of face detection with the new model.
+
+Phase 3: Documentation
+
+1.  Update README: Document the new face detection model option, including how to configure it and any changes to prerequisites or model downloading.
+2.  Update Planned Enhancements: Mark this enhancement as completed in `planned.txt` and `README.md`.
+
+---
+
+Plan for "Integrate Alternative VGGFace2-trained Model" Enhancement:
+
+This enhancement aims to provide an option to use a different face recognition model architecture (trained on VGGFace2) for generating face embeddings, potentially improving performance or exploring alternatives to FaceNet.
+
+Phase 1: Research and Model Selection
+
+1.  Identify Candidate VGGFace2 Models: Research popular and effective model architectures trained on the VGGFace2 dataset (e.g., ResNet-50, SE-ResNet-50, VGG16 if suitable for embeddings). Focus on models with available pre-trained weights compatible with a Python/PyTorch environment.
+2.  Evaluate Model Characteristics: For each candidate model, gather information on:
+    *   Reported embedding performance/accuracy.
+    *   Inference speed and computational resource requirements.
+    *   Compatibility with PyTorch.
+    *   Availability and format of pre-trained weights.
+    *   Specific preprocessing requirements (input size, normalization).
+    *   Licensing terms.
+3.  Select a Model: Based on the evaluation criteria and the goals for this enhancement, choose one or two most promising models for potential integration.
+
+Phase 2: Integration
+
+1.  Add Dependencies: Add any necessary Python libraries required by the chosen model(s) to `requirements.txt`.
+2.  Acquire Model Weights: Obtain the pre-trained weights for the selected model(s). Determine how best to include these in the project (e.g., include in the repository, download during Docker build or providing instructions).
+3.  Implement New Model Class(es):
+    *   Create a new Python file (e.g., `src/models/vggface2_resnet.py`) or modify the existing `src/models/facenet.py`.
+    *   Implement the chosen VGGFace2 model architecture within a Python class.
+    *   Add logic to load the acquired pre-trained weights into the model.
+    *   Ensure the model's forward pass outputs face embeddings in a compatible format (e.g., a NumPy array or PyTorch tensor of the expected embedding size).
+4.  Update Configuration: Modify environment variables (e.g., in `.env`) or application configuration to allow specifying which face recognition model (`facenet` or the new model) should be loaded and used by the application.
+5.  Adjust FacePreprocessor (if needed): Review the preprocessing steps in `src/utils/face_preprocessing.py`. If the new model requires a different input image size or normalization method compared to FaceNet, add logic to handle this based on the selected model configuration.
+6.  Testing:
+    *   Unit Tests: If feasible, write or adapt unit tests for the new model class to verify it loads correctly and produces outputs of the expected format/size.
+    *   Integration Tests: Run the full application with the new model enabled. Perform registration, verification, and identification tests using a sample set of faces to ensure the pipeline works. Compare the verification/identification accuracy with the original FaceNet model.
+    *   Performance Testing: Evaluate the inference speed of the new model for embedding generation.
+
+Phase 3: Documentation
+
+1.  Update README: Document the new model option in the README, including how to configure it, any new prerequisites (libraries, model weights), and instructions for obtaining model weights if they are not included in the repository.
+2.  Update Planned Enhancements: Mark this enhancement as completed in `planned.txt` and `README.md`. 

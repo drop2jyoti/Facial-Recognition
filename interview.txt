@@ -1,0 +1,77 @@
+Potential Interview Questions for Facial Recognition System Project:
+
+Based on the architecture, technologies, and features of this project, here are some types of questions you might be asked in an interview:
+
+**1. System Design and Architecture:**
+
+*   Explain the overall architecture of this Facial Recognition System. What are the main components and how do they interact?
+*   Why did you choose FastAPI for the backend? What are its advantages in this context?
+*   How would you scale this application to handle a large number of users and high traffic? (Mention scaling the FastAPI app, Redis, adding a load balancer, etc.)
+*   What are the potential bottlenecks in this system?
+
+**2. Backend Implementation (FastAPI, API Design):**
+
+*   How did you design the API endpoints (`/register`, `/verify`, `/identify`, `/users/{user_id}`, `/unregister/{user_id}`)? Explain the request and response structure for each.
+*   How is API key authentication implemented? What are the pros and cons of this method? How could you improve authentication?
+*   Explain how file uploads are handled in FastAPI for image processing.
+*   How does the rate limiting work using SlowAPI? Why is rate limiting important for this kind of application?
+*   How do you handle configuration like Redis host/port and API key using environment variables and `python-dotenv`?
+*   How do you manage dependencies using `requirements.txt`?
+*   Explain the use of `Depends` in FastAPI.
+
+**3. Machine Learning and Computer Vision:**
+
+*   Explain the entire face recognition pipeline, from input image to embedding/result.
+*   How does the FaceNet model work to generate face embeddings? What is a face embedding?
+*   What is cosine similarity, and why is it used here for comparing embeddings? What does the similarity score represent?
+*   Why did you choose MTCNN for face detection? What are its characteristics and limitations? How could you improve face detection? (Relate to the "Explore Advanced Face Detection Models" enhancement).
+*   Describe the face preprocessing steps (detection, resizing, normalization). Why are these steps necessary?
+*   What is the significance of the `FACE_MATCHING_THRESHOLD`? How would you determine an optimal threshold?
+*   Discuss the potential challenges with face recognition (e.g., variations in pose, lighting, expression, age, occlusion).
+
+**4. Data Storage (Redis):**
+
+*   Why did you choose Redis to store face embeddings? What are its advantages and limitations for this use case?
+*   How are the embeddings stored in Redis? What data type is used? (Answer: Stored as bytes after converting NumPy array).
+*   How is the search (`find_matches`) implemented? What are the performance implications of scanning keys in Redis for a large database? (Relate to the need for a vector database).
+*   How is the connection to Redis managed in the `EmbeddingStore` class?
+
+**5. Deployment (Docker):**
+
+*   Explain the purpose of the `Dockerfile`. What are the key steps in building the Docker image?
+*   Explain the `docker-compose.yml` file. How does it define the services (`app`, `redis`) and their relationship?
+*   How do the application and Redis services communicate with each other within the Docker network?
+*   Why is Docker a good choice for deploying this application?
+*   How would you deploy this to a cloud environment (e.g., AWS, GCP, Azure)?
+
+**6. Frontend (Web Interface):**
+
+*   How does the JavaScript code interact with the backend API? (Mention `fetch` API).
+*   How is the API key handled on the client-side? (localStorage, prompt). What are the security considerations of storing the API key in localStorage?
+*   How are images sent from the browser to the backend? (FormData).
+*   Explain the basic error handling on the frontend based on API response status codes.
+*   How did you implement the dynamic rendering of the registered user list with buttons?
+*   How is event delegation used for the "View Details" and "Unregister" buttons?
+
+**7. Specific Implementation Details and Choices:**
+
+*   Discuss any trade-offs you made during development (e.g., using MTCNN vs. a different detector, using Redis scan vs. a vector database, simple API key vs. a full auth system).
+*   Explain any interesting bugs you encountered and how you debugged and fixed them (like the `[object Object]` error, the 422 error for user_id, the "body stream already read" error, the "face too small" error).
+*   How did you handle logging in the application?
+
+**8. Troubleshooting and Debugging:**
+
+*   Imagine a user reports that face identification is consistently failing for a specific person. How would you go about debugging this issue?
+*   If the application starts returning 500 errors for all requests, what would be the first things you check?
+
+**9. Future Enhancements:**
+
+*   Discuss the items listed in your "Future Enhancements" section. Be prepared to explain why each enhancement is valuable and how you would approach implementing it (you can use the plans in `planned.txt` as a reference).
+
+**Tips for Answering:**
+
+*   **Be Specific:** Relate your answers back to the actual code, libraries, and design choices you made in *this* project.
+*   **Explain "Why":** Don't just state *what* you did, explain *why* you did it that way.
+*   **Discuss Trade-offs:** Show that you understand that engineering involves choices with compromises.
+*   **Highlight Learning:** If you faced challenges, explain what you learned from them.
+*   **Show Enthusiasm:** Demonstrate your interest in the project and the technologies used. 
