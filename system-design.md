@@ -45,26 +45,6 @@ In the context of a microservice-oriented application like this API, FastAPI's f
 
 ## System Architecture Diagram
 
-```mermaid
-graph TD
-    User[User] -->|Interacts via| Frontend[Web Interface (Browser)];
-    Frontend -->|Sends HTTP Requests| BackendAPI[Backend API (FastAPI)];
-
-    subgraph Backend System
-        BackendAPI -->|Uses| FaceProcessing[Face Processing Pipeline <br> (Detection, Preprocessing, Embedding)];
-        FaceProcessing --> BackendAPI;
-        BackendAPI <-->|Stores/Retrieves Embeddings| DataStore[Data Store (Redis)];
-    end
-
-    subgraph Deployment (Docker)
-        BackendSystem
-    end
-
-    % Optional: Show Redis also in Docker deployment explicitly if desired,
-    % but it's typically understood that the Backend System interacts with it
-    % within the same Docker context managed by docker-compose.
-    % For simplicity, grouping BackendAPI and its direct dependencies within the Docker box.
-
-```
+![System Architecture Diagram](system-design.png)
 
 This diagram provides a high-level overview of how the different parts of the system fit together and interact.
