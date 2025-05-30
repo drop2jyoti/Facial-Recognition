@@ -14,6 +14,12 @@ A robust facial recognition system built with FastAPI, PyTorch, and Redis. This 
 - Debug endpoints for system monitoring
 - User-friendly web interface for easy interaction
 
+## System Design
+
+Here is a high-level diagram illustrating the architecture of the system:
+
+![System Architecture](system-design.png)
+
 ## Prerequisites
 
 - Python 3.9+
